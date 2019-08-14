@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../resources/css/ext-all.css" />
+    <script type="text/javascript" src="../adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="../ext-all.js"></script>
+    <script type="text/javascript">
+        Ext.onReady(function () {
+
+            var searchType = new Ext.TabPanel({
+                width: 600,
+                height: 80,
+                activeTab: 0,
+                plain: true,
+                border: false,
+                cls: 'tab',
+                id: 'type',
+                items: [{
+                    title: '国内版',
+                    xtype: 'textfield',
+                    id: 'input1'
+                }, {
+                    title: '国际版',
+                    xtype: 'textfield',
+                    id: 'input2'
+                }]
+            })
+
+            var container = new Ext.Container({
+                renderTo: 'test',
+                cls: 'location',
+                layout: {
+                    type: 'hbox'
+                },
+                items: [
+                    {
+                        width: 180,
+                        xtype: 'container',
+                        items: [{
+                            xtype: 'box',
+                            autoEl: {
+                                tag: 'img',
+                                src: './pic/bing.png',
+                                height: 80,
+                                width: 160,
+                            }
+                        }]
+                    }, searchType
+                    , {
+                        width: 80,
+                        xtype: 'container',
+                        cls: 'search',
+                        items: [{
+                            id: 'search-btn',
+                            xtype: 'box',
+                            cls: 'search-icon',
+                            autoEl: {
+                                tag: 'img',
+                                src: './pic/search.png',
+                                height: 32,
+                                width: 45,
+                            }
+                        }]
+                    }
+                ]
+            })
+            var searchBtn = Ext.get('search-btn').on('click', function () {
+                var type = searchType.activeTab.title;
+                if (type == '国内版') {
+                    var value = Ext.get('input1').dom.value;
+                    window.location.href = "https://cn.bing.com//search?q=" + value + "&FORM=BESBTB";
+                } else {
+                    var value = Ext.get('input2').dom.value;
+                    window.location.href = "https://cn.bing.com//search?q=" + value + "&FORM=BESBTB&ensearch=1";
+                }
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="test"></div>
+</body>
+<style>
+    body {
+        background: url('./pic/bg.jpg')
+    }
+
+    .location {
+        margin: 180px 0 0 200px;
+    }
+
+    .search {
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        top: 36px;
+        left: -48px;
+    }
+
+    .search-icon:hover {
+        cursor: pointer;
+    }
+</style>
+
+</html>
