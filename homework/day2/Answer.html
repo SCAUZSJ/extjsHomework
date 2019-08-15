@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../../resources/css/ext-all.css" />
+    <script type="text/javascript" src="../../adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="../../ext-all.js"></script>
+    <script type="text/javascript" src="../examples.js"></script>
+
+    <script type="text/javascript">
+        Ext.onReady(function () {
+            // var comboxProvince = new Ext.form.ComboBox({
+            //     renderTo: 'test',
+            //     fieldLabel: 'province',
+            //     triggerAction: 'all',
+            //     emptyText: 'Choose/Input your province',
+            //     mode: 'local',
+            //     store: new Ext.data.ArrayStore({
+            //         id: 0,
+            //         fields: ['province', 'description'],
+            //         data: [['GD', '广东'], ['BJ', '北京']]
+            //     }),
+            //     valueField: 'province',
+            //     displayField: 'description'
+            // });
+            // var GDCity = new Ext.data.ArrayStore({
+            //     id: 0,
+            //     fields: ['city', 'description'],
+            //     data: [['ST', '汕头'], ['GZ', '广州'], ['SZ', '深圳']]
+            // })
+            // var BJCity = new Ext.data.ArrayStore({
+            //     id: 0,
+            //     fields: ['city', 'description'],
+            //     data: [['BJ', '北京']]
+            // })
+
+            // var comboxCity = new Ext.form.ComboBox({
+            //     id: 'cityCombox',
+            //     fieldLabel: 'city',
+            //     triggerAction: 'all',
+            //     emptyText: 'Choose/Input your city',
+            //     mode: 'local',
+            //     store: BJCity,
+            //     valueField: 'city',
+            //     displayField: 'description'
+            // });
+
+
+            // //combox的store主要是为了存储键值对，来根据id显示不同的label.
+            // //combox.view的store是为了渲染下拉菜单，来提供用户选择.
+            // //两者需要同步更新，才能达到效果.
+            // comboxProvince.on('select', function () {
+            //     var province = comboxProvince.getValue();
+            //     if (province == 'GD') {
+            //         comboxCity.store = GDCity;
+            //         if (comboxCity.view) {
+            //             comboxCity.view.setStore(GDCity);
+            //         }
+            //     } else {
+            //         comboxCity.store = BJCity;
+            //         if (comboxCity.view) {
+            //             comboxCity.view.setStore(BJCity);
+            //         }
+            //     }
+            // })
+            // var form = new Ext.form.FormPanel({
+            //     renderTo: 'test',
+            //     id: 'form',
+            //     defaultType: 'textfield',
+            //     labelAlign: 'center',
+            //     title: 'simple form',
+            //     labelWidth: 50,
+            //     frame: true,
+            //     width: 300,
+            //     url: 'abc/submit',
+            //     items: [{
+            //         id:'text',
+            //         xtype: 'textfield',
+            //         fieldLabel: '文本',
+            //         allowBlank:false,
+            //         maxLength:20,
+            //         name: 'text'
+            //     }], 
+            //     buttons: [{
+            //         xtype: 'button',
+            //         text: '提交AJAX',
+            //         handler: function () {
+            //             console.log(Ext.get('text').dom.value)
+            //             Ext.Ajax.request({
+            //                 method: 'POST',
+            //                 form: 'testForm',
+            //                 params : {
+            //                     text:Ext.get('text').dom.value
+            //                 },
+            //                 failure:{},
+            //                 success:{},
+            //                 url: 'abc/ajax-submit'
+            //             });
+
+            //         }
+            //     },{
+            //         xtype: 'button',
+            //         text: '提交Basic',
+            //         handler: function () {
+            //             form.getForm().submit();
+            //         }
+            //     },
+            //     {
+            //         xtype: 'button',
+            //         text: '提交Html',
+            //         handler: function () {
+            //             form.getForm().getEl().dom.submit();
+            //         }
+            //     }]
+
+            // });
+
+            var showSubmitData = function () {
+                var question_1 = Ext.getCmp('question-1').getValue().boxLabel;
+                var question_2 = Ext.getCmp('question-2').getValue();
+                var checkboxAnswer = question_2.map(item => item.boxLabel).join('、');
+                console.log(question_1)
+                console.log(checkboxAnswer)
+
+                Ext.getCmp('answer_1').setText(question_1);
+                Ext.getCmp('answer_50').setText(checkboxAnswer);
+            }
+            var isCheckAnswer = function () {
+                var question_2 = Ext.getCmp('question-2').getValue();
+                var checkboxAnswer = question_2.map(item => item.boxLabel).join('、');
+                if (checkboxAnswer == []) {
+                    return false;
+                }
+                return true;
+            }
+
+            var navHandler = function (direction) {
+
+                var wizard = Ext.getCmp('wizard').layout;
+                var prev = Ext.getCmp('move-prev');
+                var next = Ext.getCmp('move-next');
+                var activeId = wizard.activeItem.id;
+
+                if (activeId == 'question-1') {
+                    if (direction == 1) {
+                        wizard.setActiveItem(1);
+                        prev.setDisabled(false);
+                    }
+                } else if (activeId == 'question-2') {
+                    if (direction == -1) {
+                        wizard.setActiveItem(0);
+                        prev.setDisabled(true);
+                    } else {
+                        if (!isCheckAnswer()) {
+                            next.setDisabled(false);
+                            Ext.MessageBox.alert('提醒', '本题目未完成！');
+                            return;
+                        }
+                        wizard.setActiveItem(2);
+                        showSubmitData();
+                        next.setText('提交答案');
+
+                        console.log(next)
+                    }
+                } else if (activeId == 'answer-form') {
+                    if (direction == -1) {
+                        wizard.setActiveItem(1);
+                        next.setText('下一题');
+                    } else {
+                        Ext.MessageBox.alert('提醒', 'Congratulation!');
+                        Ext.Ajax.request({
+                            method: 'POST',
+                            params: {
+                                text: 'test'
+                            },
+                            // failure:{},
+                            // success:{},
+                            url: 'abc/ajax-submit'
+                        });
+
+                    }
+                }
+            };
+
+
+
+            const cards = new Ext.Panel({
+                renderTo: 'test',
+                layout: 'card',
+                id: 'wizard',
+                style: 'margin:0 auto; margin-top:120px;',
+                height: 500,
+                width: 500,
+                activeItem: 0,
+                title: 'Questionnaire',
+                cls: 'panel',
+                defaults: {
+                    border: false
+                },
+                bbar: [{
+                    id: 'move-prev',
+                    text: '上一题',
+                    handler: navHandler.createDelegate(this, [-1]),
+                    disabled: true
+                }, '->', {
+                    id: 'move-next',
+                    text: '下一题',
+                    handler: navHandler.createDelegate(this, [1])
+                }],
+                items: [{
+                    id: 'question-1',
+                    xtype: 'radiogroup',
+                    // label: 'Q1:番茄酱属于以下哪种垃圾？（单选）',
+                    autoHeight: true,
+                    columns: 1,
+                    cls: 'question',
+                    items: [{
+                        xtype: 'label',
+                        html: '<b>Q1:番茄酱属于以下哪种垃圾？（单选）</b>'
+                    },
+                    {
+                        boxLabel: '湿垃圾',
+                        name: 'QuestionOne',
+                        inputValue: '1',
+                        checked: true,
+                    }, {
+                        boxLabel: '干垃圾',
+                        name: 'QuestionOne',
+                        inputValue: '2',
+                    }, {
+                        boxLabel: '有害垃圾',
+                        name: 'QuestionOne',
+                        inputValue: '3',
+                    }, {
+                        boxLabel: '可回收物',
+                        name: 'QuestionOne',
+                        inputValue: '4',
+                    }]
+
+                }, {
+                    id: 'question-2',
+                    xtype: 'checkboxgroup',
+                    // title: 'Q50:王大叔出门遛狗后，哪些是正确处理狗？（多选）',
+                    autoHeight: true,
+                    columns: 1,
+                    cls: 'question',
+                    items: [
+                        {
+                            xtype: 'label',
+                            html: '<b>Q50:王大叔出门遛狗后，哪些是正确处理狗？（多选）</b>'
+                        },
+                        {
+                            boxLabel: '把粑粑用废报纸包好带回家冲掉',
+                            inputValue: '1',
+                            // checked: true
+                        },
+                        {
+                            boxLabel: '受污染的报纸按有害垃圾处理',
+                            inputValue: '2'
+                        },
+                        {
+                            boxLabel: '没受污染的报纸按可回收垃圾处理',
+                            inputValue: '3'
+                        }, {
+                            boxLabel: '受污染的报纸浸水后当湿垃圾处理',
+                            inputValue: '4'
+                        }]
+
+                }, {
+                    id: 'answer-form',
+                    xtype: 'panel',
+                    layout: 'vbox',
+                    autoWidth: true,
+                    cls: 'question show-panel',
+                    // title: 'Answer',
+                    items: [{
+                        xtype: 'label',
+                        html: 'Q1:',
+                    },
+                    {
+                        id: 'answer_1',
+                        xtype: 'label',
+                        html: '',
+                        name: 'Q1_answer'
+                    },
+                    {
+                        xtype: 'label',
+                        html: 'Q50:',
+                    }, {
+                        id: 'answer_50',
+                        xtype: 'label',
+                        html: 'Q50:',
+                        name: 'Q1_answer'
+                    }]
+                }]
+
+            });
+
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="test"></div>
+</body>
+<style>
+    .question {
+        margin: 25px;
+    }
+
+    .x-form-check-wrap {
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+
+    .show-panel {
+        padding: 30px;
+    }
+
+    .show-panel label {
+        line-height: 40px;
+    }
+</style>
+
+</html>
