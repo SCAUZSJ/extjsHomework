@@ -1,0 +1,37 @@
+[
+    {
+        text:'School',
+        children:[
+            {
+                text:'Class 1',
+                children:[
+                    {
+                        text:'milo',
+                        leaf:true
+                    },
+                   
+                    {
+                        text:'Andrew',
+                        leaf:true
+                    }
+                ]
+            },
+            {
+                text:'Class 2',
+                leaf:false,
+                children:[
+                    {
+                        text:'milo',
+                        leaf:true
+                    },
+                   
+                    {
+                        text:'skye',
+                        leaf:true
+                    }
+                ]
+            }
+           
+        ]
+    }
+]

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../../resources/css/ext-all.css" />
+    <script type="text/javascript" src="../../adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="../../ext-all.js"></script>
+    <script type="text/javascript" src="../examples.js"></script>
+
+    <script type="text/javascript">
+        Ext.onReady(function () {
+
+            var addNewNode = function (node) {
+
+                var newNode = '';
+                if (node.isLeaf()) {
+                    var parent = node.parentNode;
+                    newNode = new Ext.tree.TreeNode({ text: 'New Student', leaf: true });
+                    newNode.setCls('text-red');
+                    parent.appendChild(newNode);
+                } else {
+                    if (node.text.indexOf('School') != -1) {
+                        newNode = new Ext.tree.TreeNode({ text: 'New Class', leaf: false, children: [{}] });
+                    } else {
+
+                        newNode = new Ext.tree.TreeNode({ text: 'New Student', leaf: true });
+                    }
+                    newNode.setCls('text-red');
+                    node.appendChild(newNode);
+                }
+            }
+            var loader = new Ext.tree.TreeLoader({ dataUrl: 'tree-data.txt' });
+            var contextmenu = new Ext.menu.Menu({
+                id: 'theContextMenu',
+                items: [{
+                    text: 'Delete',
+                    id: 'delete'
+                },
+                {
+                    text: 'Add',
+                    id: 'add'
+                }],
+                listeners: {
+                    itemclick: function (item) {
+                        var n = item.parentMenu.contextNode;
+                        switch (item.id) {
+                            case 'delete':
+                                n.remove();
+                                break;
+                            case 'add':
+                                addNewNode(n);
+                                break;
+                        }
+                    }
+
+                }
+            });
+            var tree = new Ext.tree.TreePanel({
+                el: 'test',
+                loader: loader,
+                animate: true,
+                enableDD: true,
+                rootVisible: false,
+                contextMenu: contextmenu,
+            });
+            var clickNode = null;
+            tree.on('click', function (node) {
+                clickNode = node;
+                Ext.get('input').dom.value = '';
+            });
+            tree.on("contextmenu", function (node, e) {
+                node.select();
+                var c = node.getOwnerTree().contextMenu;
+                c.contextNode = node;
+                console.log(c)
+                contextmenu.showAt(e.getXY());
+            });
+            tree.on('nodedrop', function (e) {
+                Ext.Msg.alert('Drag Event', 'currently dragging node:' + e.dropNode.text + ' dropping into node:' + e.target.text + ', dragging pattern is ' + e.point);
+            });
+            Ext.get('addNode').on('click', function () {
+                var key = Ext.get('input').dom.value;
+                console.log(key)
+                var opNode = clickNode;
+                if (opNode.isLeaf()) {
+                    opNode = opNode.parentNode;
+                }
+                opNode.appendChild(new Ext.tree.TreeNode({ text: key}));
+
+            });
+
+
+            var treeEditor = new Ext.tree.TreeEditor(tree, {
+                allowBlank: false
+            }, {
+                    listeners: {
+                        complete: function (editor, currVal, origVal) {
+                            var item = editor.editNode;
+                            item.setCls('')
+                        }
+                    }
+
+                });
+
+            var root = new Ext.tree.AsyncTreeNode({ text: 'root' });
+            tree.setRootNode(root);
+            tree.expandAll();
+            tree.render();
+
+
+
+
+
+
+
+
+
+
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="test"></div>
+    <input id='input' name='input' />
+    <button id='addNode'>添加</button>
+
+</body>
+<style>
+    .text-red a span {
+        color: red;
+    }
+</style>
+
+</html>
