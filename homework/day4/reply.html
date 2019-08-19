@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../../resources/css/ext-all.css" />
+    <script type="text/javascript" src="../../adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="../../ext-all.js"></script>
+    <!-- <script type="text/javascript" src="../examples.js"></script> -->
+
+    <script type="text/javascript">
+        Ext.onReady(function () {
+
+
+
+
+           
+
+            var editMenu = new Ext.menu.Menu({
+                items: [
+                    {
+                        text: 'reset',
+                        handler: function () {
+                            Ext.getCmp('text-area').reset();
+                            Ext.getCmp('reply-btn').setDisabled(true)
+                        }
+                    }
+                ]
+            });
+            var tableMenu = new Ext.menu.Menu({
+                items: [
+                    {
+                        text: 'table',
+                        handler: function () {
+                            win.show()
+                        }
+                    },
+                ]
+            });
+            var contextMenu = new Ext.menu.Menu({
+                items: [
+                    {
+                        text: 'Edit',
+                        menu: editMenu
+                    },
+                    {
+                        text: 'Insert',
+                        menu: tableMenu
+                    }
+                ]
+            });
+            Ext.get(document).on('contextmenu', function (e) {
+                e.preventDefault();
+                contextMenu.showAt(e.getXY());
+            });
+
+            var progressBar = new Ext.ProgressBar({
+                renderTo: 'pb',
+                hidden: true,
+            });
+            var panel = new Ext.Panel({
+                id: 'panel',
+                renderTo: 'test',
+                title: 'reply',
+
+
+                height: 960,
+                tbar: new Ext.Toolbar({
+                    id: 'my-tb',
+                    items: [
+                        {
+                            text: 'Edit',
+                            menu: editMenu
+                        },
+                        ' ',
+                        '-',
+                        ' ',
+                        {
+                            text: 'insert',
+                            menu: tableMenu
+                        }
+                    ]
+                }),
+                items: [{
+                    xtype: 'container',
+                    layout: 'absolute',
+                    items: [
+                     {
+                            id: 'text-area',
+                            xtype: 'textarea',
+                            enableKeyEvents: true,
+                            height: 180,
+                            width: 480,
+                            pageX: 80,
+                            pageY: 90,
+                            listeners: {
+                                keyup: function () {
+                                    var value = Ext.get('text-area').dom.value
+                                    Ext.getCmp('reply-btn').setDisabled(Ext.isEmpty(value));
+                                }
+                            }
+                        }, {
+                            id: 'reply-btn',
+                            xtype: 'button',
+                            text: 'reply',
+                            disabled: true,
+                            height: 50,
+                            width: 60,
+                            pageX: 580,
+                            pageY: 220,
+                            handler: function () {
+                                progressBar.show();
+                                progressBar.wait({
+                                    interval: 300,
+                                    duration: 3000,
+                                    increment: 10,
+                                    text: 'Wating···',
+                                    fn: function () {
+                                        progressBar.hide();
+                                        Ext.Msg.alert('Progress', "Success!")
+                                    }
+                                });
+                            }
+                        }]
+                }]
+            });
+
+            var createTable = function (row, column) {
+                // var tpl = '<h3>Table</h3>';
+                var tpl = '<table border="1">';
+                for (var i = 1; i <= Math.min(row, 9); i++) {
+                    tpl += '<tr>'
+                    for (var j = 1; j <= Math.min(column, 9); j++) {
+                        tpl += `<td>${i} x ${j} = ${i * j}</td>`
+                    }
+                    tpl += '</tr>'
+                }
+                return tpl;
+            }
+            var win = new Ext.Window({
+                title: '请输入行列数',
+                width: 250,
+                closeAction: 'hide',
+                items: new Ext.form.FormPanel({
+                    defaultType: 'textfield',
+                    labelWidth: 60,
+                    frame: true,
+                    items: [{
+                        id: 'row',
+                        fieldLabel: '行：',
+                        allowBlank: false
+                    }, {
+                        id: 'column',
+                        fieldLabel: '列：',
+                        allowBlank: false
+                    }],
+                    buttons: [{
+                        text: '插入',
+                        handler: function () {
+                            Ext.get('table').dom = ''
+                            var tql = createTable(Ext.get('row').dom.value, Ext.get('column').dom.value);
+                            Ext.getCmp('row').reset();
+                            Ext.getCmp('column').reset();
+                            var template = new Ext.Template([
+                                tql
+                            ]);
+                            template.overwrite('table')
+                            console.log(tql)
+                        }
+                    }]
+                }),
+
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+
+
+    <div id='pb'></div>
+    <div id="test" style="width: 780px;"></div>
+    <div id="table" style="position:absolute;top:300px;left:24px;">
+
+</body>
+<style>
+
+</style>
+
+</html>
