@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../../resources/css/ext-all.css" />
+    <script type="text/javascript" src="../../adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="../../ext-all.js"></script>
+    <script type="text/javascript" src="../../examples/ux/PagingMemoryProxy.js"></script>
+
+    <script type="text/javascript">
+        Ext.onReady(function () {
+
+            var sm = new Ext.grid.CheckboxSelectionModel();
+
+            var cm = new Ext.grid.ColumnModel({
+
+                columns: [
+                    new Ext.grid.RowNumberer(),
+                    sm,
+                    {
+                        header: '姓名',
+                        dataIndex: 'name',
+                        sortable: true,
+                        editor: new Ext.grid.GridEditor(
+                            new Ext.form.TextField({
+                                allowBlank: false
+                            })
+                        )
+                    },
+                    {
+                        header: '性别',
+                        dataIndex: 'sex',
+                        editor: new Ext.grid.GridEditor(
+                            new Ext.form.TextField({
+                                allowBlank: false
+                            })
+                        )
+                    },
+                    {
+                        header: '年龄',
+                        dataIndex: 'age',
+                        editor: new Ext.grid.GridEditor(
+                            new Ext.form.NumberField({
+                                allowBlank: false
+                            }),
+                        )
+                    },
+                    {
+                        header: '生日',
+                        dataIndex: 'birthday',
+                        editor: new Ext.grid.GridEditor(
+                            new Ext.form.DateField({
+                                allowBlank: false
+                            })
+                        ),
+						renderer:Ext.util.Format.dateRenderer('Y-m-d')
+                    },
+                    {
+                        header: '班级',
+                        dataIndex: 'clasz',
+                        sortable: true,
+                        editor: new Ext.grid.GridEditor(
+                            new Ext.form.TextField({
+                                allowBlank: false
+                            })
+                        )
+                    },
+                    {
+                        header: '头像',
+                        dataIndex: 'avatar',
+                        editor: new Ext.grid.GridEditor(
+                            new Ext.form.TextField({
+                                allowBlank: false
+                            })
+                        )
+                    }
+                ],
+
+            });
+
+            var data = [
+                ['张三', 'male', '20', '2004-01-01', 'class 2', 'url'],
+                ['张四', 'female', '19', '2004-02-01', 'class 2', 'url'],
+                ['张五', 'male', '21', '2004-03-01', 'class 3', 'url'],
+                ['张六', 'male', '20', '2006-01-01', 'class 2', 'url'],
+                ['张七', 'female', '19', '2005-02-01', 'class 1', 'url'],
+                ['张八', 'male', '21', '2000-03-01', 'class 3', 'url'],
+
+            ];
+            var Record = Ext.data.Record.create([
+                { name: 'name', type: 'string' },
+                { name: 'sex', type: 'string' },
+                { name: 'age', type: 'string' },
+                { name: 'birthday', type: 'string' },
+                { name: 'clasz', type: 'string' },
+                { name: 'avatar', type: 'string' }
+            ]);
+
+            var store = new Ext.data.GroupingStore({
+                proxy: new Ext.data.PagingMemoryProxy(data),
+                reader: new Ext.data.ArrayReader({}, [
+                    { name: 'name' },
+                    { name: 'sex' },
+                    { name: 'age' },
+                    { name: 'birthday' },
+                    { name: 'clasz' },
+                    { name: 'avatar' }
+                ]),
+                groupField: 'clasz',
+
+            });
+            store.load({ params: { start: 0, limit: 3 } });
+
+
+
+            var handle = {
+
+                deleteColumn: function (index) {
+                    var record = store.getAt(index);
+                    store.remove(record);
+                    sm.lastActive = false;
+                    grid.view.refresh();
+                },
+
+                addColumn: function (index, record) {
+                    store.insert(index, record);
+                    grid.view.refresh();
+                }
+            }
+
+            var grid = new Ext.grid.EditorGridPanel({
+                id: 'grid',
+                autoHeight: true,
+                renderTo: 'test',
+                store: store,
+                cm: cm,
+                sm: sm,
+                view: new Ext.grid.GroupingView(),
+                autoHeight: true,
+                tbar: new Ext.Toolbar(['-', {
+                    text: '添加',
+                    handler: function () {
+                        var record = new Record({
+                            name: '',
+                            sex: '',
+                            age: '',
+                            birthday: '',
+                            clasz: '',
+                            avatar: ''
+                        });
+                        grid.stopEditing();
+                        var index = sm.lastActive || 0; //初始为false
+                        record.data.clasz = store.getAt(sm.lastActive).json[4]; //赋值clasz
+                        console.log(record)
+                        handle.addColumn(index, record);
+                        grid.startEditing(index, 2);
+
+                        sm.lastActive = false;
+                    }
+                }, '-', {
+                        text: '删除',
+                        handler: function () {
+                            Ext.Msg.confirm('提示', '确定要删除？', function (btn) {
+                                if (btn == 'yes') {
+                                    handle.deleteColumn(sm.lastActive)
+                                }
+                            });
+                        }
+                    }, '-']),
+                bbar: new Ext.PagingToolbar({
+                    pageSize: 3,
+                    store: store,
+                    displayInfo: true,
+                    displayMsg: '显示第 {0} 条到 {1} 条记录，一共 {2} 条',
+                    emptyMsg: "没有记录"
+                })
+
+            });
+
+            var contextMenu = new Ext.menu.Menu({
+                items: [
+                    {
+                        text: 'Up',
+                        handler: function () {
+                            // var record = store.getAt(sm.lastActive);
+                            console.log(store)
+                            var activeIndex = sm.lastActive;
+                            if (activeIndex != 0) {
+                                var record = store.getAt(activeIndex);
+                                handle.deleteColumn(activeIndex);
+                                handle.addColumn(activeIndex - 1, record);
+                            }
+                        }
+                    },
+                    {
+                        text: 'Down',
+                        handler: function () {
+                            // var record = store.getAt(sm.lastActive);
+                            var activeIndex = sm.lastActive;
+                            // console.log(store.)
+                            if (activeIndex != store.reader.arrayData.length) {
+                                var record = store.getAt(activeIndex);
+                                handle.deleteColumn(activeIndex);
+                                handle.addColumn(activeIndex + 1, record);
+                            }
+                        }
+                    },
+                    {
+                        text: 'First',
+                        handler: function () {
+                            // var record = store.getAt(sm.lastActive);
+                            var activeIndex = sm.lastActive;
+                            if (activeIndex != 0) {
+                                var record = store.getAt(activeIndex);
+                                handle.deleteColumn(activeIndex);
+                                handle.addColumn(0, record);
+                            }
+                        }
+                    },
+                    {
+                        text: 'Last',
+                        handler: function () {
+                            // var record = store.getAt(sm.lastActive);
+                            var activeIndex = sm.lastActive;
+                            if (activeIndex != store.reader.arrayData.length) {
+                                var record = store.getAt(activeIndex);
+                                handle.deleteColumn(activeIndex);
+                                handle.addColumn(store.reader.arrayData.length, record);
+                                grid.view.refresh();
+                            }
+                        }
+                    }
+                ]
+            });
+            grid.on('rowcontextmenu', function (grid, rowIndex, e) {
+                e.preventDefault();
+                grid.getSelectionModel().selectRow(rowIndex);
+                // console.log(sm.lastActive)
+                contextMenu.showAt(e.getXY());
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+
+
+    <!-- <div id='pb'></div> -->
+    <div id="test"></div>
+    <!-- <div id="table" style="position:absolute;top:300px;left:24px;"> -->
+
+</body>
+<style>
+
+</style>
+
+</html>
